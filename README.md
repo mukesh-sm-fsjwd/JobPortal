@@ -1,10 +1,10 @@
 # Job Portal
 
-A full-stack job portal app built with **Spring Boot**.
+A full-stack job portal app built with **Spring Boot** and **React**.
 
 I started this project to learn Spring Boot from scratch.  
 **Version 1** used JSP as the view layer (server-side rendering).  
-**Version 2 (this branch — `main`)** keeps the same Spring Boot backend but replaces JSP with a proper React SPA — with a real database, REST API, and a polished dark UI.
+**Version 2 (this branch — `main`)** keeps the same Spring Boot backend but replaces JSP with a proper React SPA — with a real PostgreSQL database, REST API, and a live search feature.
 
 > **Branch guide:**
 > - `main` → React UI version (current, latest)
@@ -14,8 +14,8 @@ I started this project to learn Spring Boot from scratch.
 
 ## What it does
 
-- **Browse all job listings** — card-based grid with job title, description, experience badge, and tech stack chips
-- **Live search** — type any keyword and results update on every keystroke (searches job title + description via REST API)
+- **Browse all job listings** — card-based grid with job title, description, experience, and tech stack
+- **Live search** — type any keyword and results update instantly (searches job title + description)
 - **Post a new job** — fill in the title, description, experience required, and pick tech skills
 - **Edit an existing job** — update any field of a posted job
 - **Delete a job** — remove a listing with one click
@@ -27,9 +27,9 @@ I started this project to learn Spring Boot from scratch.
 | Layer | Version 1 (JSP) | Version 2 (React — this branch) |
 |---|---|---|
 | Backend | Spring Boot + Spring MVC | Spring Boot + Spring Data JPA |
-| View | JSP + JSTL | React (Vite) + Axios |
+| View | JSP + JSTL | React (Create React App) + Axios |
 | Database | In-memory ArrayList | PostgreSQL |
-| Styling | Plain CSS | Custom dark design system (glassmorphism) |
+| Styling | Plain CSS | Material UI (MUI) |
 | Search | None | Live per-keystroke keyword search |
 
 ---
@@ -54,11 +54,11 @@ JobPortalReact/
 │       └── resources/
 │           └── application.properties         # DB + server config
 │
-└── react-ui/                                 # React frontend (Vite)
+└── frontend/                                 # React frontend (Create React App)
     └── src/
-        ├── main.jsx                           # React entry point
-        ├── App.jsx                            # Client-side routes
-        ├── index.css                          # Global design system
+        ├── index.js                           # React entry point
+        ├── App.js                             # Client-side routes
+        ├── index.css                          # Global styles
         └── components/
             ├── AllPosts.jsx                   # Job listing + live search
             ├── Create.jsx                     # Create job form
@@ -72,32 +72,31 @@ JobPortalReact/
 
 | Method | URL | What it does |
 |---|---|---|
-| `GET` | `/jobPosts` | Get all job posts |
-| `GET` | `/jobPosts/keyword/{keyword}` | Search by keyword (title or description) |
-| `GET` | `/jobPost/{postId}` | Get a single job by ID |
-| `POST` | `/jobPost` | Create a new job |
-| `PUT` | `/jobPost` | Update an existing job |
-| `DELETE` | `/jobPost/{postId}` | Delete a job |
+| `GET` | `/jobs` | Get all job posts |
+| `GET` | `/job/keyword/{keyword}` | Search by keyword (title or description) |
+| `GET` | `/jobs/{id}` | Get a single job by ID |
+| `POST` | `/jobs` | Create a new job |
+| `PUT` | `/jobs` | Update an existing job |
+| `DELETE` | `/jobs/{postId}` | Delete a job |
 | `GET` | `/load` | Seed the database with sample jobs |
 
 ---
 
 ## Live Search — How it works
 
-The search feature on the **All Posts** page calls the backend on every single keystroke.
+The search feature on the **All Posts** page calls the backend on every keystroke.
 
 **Frontend** (`AllPosts.jsx`):
 ```js
-// Fires every time searchTerm changes (every keystroke)
 useEffect(() => {
-  if (searchTerm.trim() === '') {
+  if (query.length === 0) {
     // Empty search → fetch all jobs
-    axios.get('http://localhost:8080/jobPosts').then(...);
-  } else {
+    axios.get('http://localhost:8080/jobs').then(...);
+  } else if (query.length > 2) {
     // Has text → search by keyword
-    axios.get(`http://localhost:8080/jobPosts/keyword/${searchTerm}`).then(...);
+    axios.get(`http://localhost:8080/job/keyword/${query}`).then(...);
   }
-}, [searchTerm]);
+}, [query]);
 ```
 
 **Backend** (`JobRepository.java`):
@@ -125,7 +124,7 @@ cd JobPortal
 Create a PostgreSQL database and update `src/main/resources/application.properties`:
 
 ```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/jobportal
+spring.datasource.url=jdbc:postgresql://localhost:5432/jobportal_db
 spring.datasource.username=your_username
 spring.datasource.password=your_password
 spring.jpa.hibernate.ddl-auto=update
@@ -151,9 +150,9 @@ http://localhost:8080/load
 ### 4. Start the frontend
 
 ```bash
-cd react-ui
+cd frontend
 npm install
-npm run dev
+npm start
 ```
 
 Frontend runs at: `http://localhost:3000`
@@ -169,7 +168,7 @@ Frontend runs at: `http://localhost:3000`
 | Backend communication | Spring MVC model attributes | REST API with JSON |
 | Search | No search | Live search on every keystroke |
 | Routing | Spring MVC `@GetMapping` for each page | React Router (client-side routes) |
-| Styling | Plain CSS file | Custom dark design system with glassmorphism |
+| Styling | Plain CSS | Material UI (MUI) components |
 
 ---
 
@@ -185,6 +184,7 @@ Frontend runs at: `http://localhost:3000`
 **Added in v2 (React):**
 - How to build a REST API with Spring Boot (`@RestController`, `@CrossOrigin`)
 - Spring Data JPA — repository pattern, derived query methods
+- How CORS works and how to allow the React app to talk to the backend
 - How React talks to a backend using Axios
 - React Router for client-side navigation
 - React hooks — `useState`, `useEffect` for data fetching and live search

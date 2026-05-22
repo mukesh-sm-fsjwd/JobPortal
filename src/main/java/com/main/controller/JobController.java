@@ -7,48 +7,47 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+@CrossOrigin(origins = "http://localhost:3000")
 @RestController
-@CrossOrigin(origins = "http://localhost:3000/")
-public class JobController{
+public class JobController {
 
     @Autowired
     private JobService jobService;
 
-    @GetMapping("jobPosts")
+    @GetMapping("jobs")
     public List<JobPost> getAllJobs(){
         return jobService.getAllJobs();
     }
 
-    @GetMapping("jobPosts/keyword/{keyword}")
-    public List<JobPost> searchByKeyword(@PathVariable(name = "keyword") String keyword){
-        return jobService.search(keyword);
+    @GetMapping("jobs/{id}")
+    public JobPost getJob(@PathVariable int id){
+        return jobService.getJob(id);
     }
 
-    @GetMapping("jobPost/{postId}")
-    public JobPost getJob(@PathVariable int postId){
-        return jobService.getJob(postId);
-    }
-
-    @PostMapping({"jobPost","create"})
-    public JobPost addJob(@RequestBody JobPost jobPost){
+    @PostMapping("jobs")
+    public void addJob(@RequestBody JobPost jobPost){
         jobService.addJob(jobPost);
-        return jobService.getJob(jobPost.getPostId());
     }
 
-    @PutMapping({"jobPost","edit"})
+    @PutMapping("jobs")
     public JobPost updateJob(@RequestBody JobPost jobPost){
         jobService.updateJob(jobPost);
         return jobService.getJob(jobPost.getPostId());
     }
 
-    @DeleteMapping("jobPost/{postId}")
-    public String deleteJob(@PathVariable int postId){
-        return jobService.deleteJob(postId);
+    @DeleteMapping("jobs/{postId}")
+    public void deleteJob(@PathVariable int postId){
+        jobService.deleteJob(postId);
     }
 
     @GetMapping("load")
-    public String loadData(){
+    public void load(){
         jobService.loadData();
-        return "Sucess";
     }
+
+    @GetMapping("job/keyword/{keyword}")
+    public List<JobPost> getByProfileAndDesc(@PathVariable String keyword){
+        return jobService.getPostByProfileAndDesc(keyword);
+    }
+
 }
